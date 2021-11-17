@@ -9,7 +9,9 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.solent.com504.oodd.cart.dao.impl.ShoppingItemCatalogRepository;
 import org.solent.com504.oodd.cart.dao.impl.UserRepository;
+import org.solent.com504.oodd.cart.model.dto.ShoppingItem;
 import org.solent.com504.oodd.cart.model.dto.User;
 import org.solent.com504.oodd.cart.model.dto.UserRole;
 
@@ -20,7 +22,7 @@ import org.springframework.stereotype.Component;
  *
  * @author cgallen
  */
-@Component
+@Component("populate-database")
 public class PopulateDatabaseOnStart {
 
     private static final Logger LOG = LogManager.getLogger(PopulateDatabaseOnStart.class);
@@ -33,6 +35,9 @@ public class PopulateDatabaseOnStart {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private ShoppingItemCatalogRepository catalogRepo;
 
     @PostConstruct
     public void initDatabase() {
@@ -66,7 +71,23 @@ public class PopulateDatabaseOnStart {
         } else {
             LOG.info("defaultuser already exists. Not creating new :" + defaultUser);
         }
+        
+        addShoppingItem("house", 20000.00);        
+        addShoppingItem("hen", 5.00);        
+        addShoppingItem("car", 5000.00);        
+        addShoppingItem("pet alligator", 65.00);        
 
         LOG.debug("database initialised");
+    }
+    
+    private void addShoppingItem(String name, Double price){
+        ShoppingItem item = new ShoppingItem();
+        item.setName(name);
+        item.setPrice(price);
+        List<ShoppingItem> itemsFound = catalogRepo.findByName(name);
+        if(itemsFound.size() < 1){
+            catalogRepo.save(item);
+            LOG.info("Added Item :" + name);
+        }
     }
 }
